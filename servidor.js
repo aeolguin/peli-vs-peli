@@ -13,6 +13,8 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(bodyParser.json());
+app.get('/competencias', controlador.listaCompetencias);
+
 
 
 //seteamos el puerto en el cual va a escuchar los pedidos la aplicación
