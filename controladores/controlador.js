@@ -10,7 +10,7 @@ function errores (data, res) {
 function listaCompetencias(req, res) {
 var sql = "select * from competencias";
 var response = {
-    'peliculas': "",
+    'data': "",
 }
 con.query(sql, function(error, resultado,fields){
     errores(error, res);

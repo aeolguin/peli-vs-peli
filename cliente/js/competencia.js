@@ -10,6 +10,7 @@ function CompetenciasController () {
 
 		// Se obtiene de la api el listado de competencias
 		$.getJSON(server+"/competencias", function (data) {
+			console.log(data);
 				// Se carga la información obtenida en el DOM
 				self.cargarCompetencias(data);
 		 });
