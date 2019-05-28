@@ -2,7 +2,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var controlador = require('./controladores/controlador');
+var controladorCliente = require('./controladores/controladorCliente');
+var controladorAdministrador = require('./controladores/controladorAdministrador');
 
 var app = express();
 
@@ -12,11 +13,19 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+//Pedido de parte del modulo Cliente - me faltan las validaciones de errores!
 app.use(bodyParser.json());
-app.get('/competencias', controlador.listaCompetencias);
-app.get('/competencias/:id/peliculas' , controlador.obtenerCompetencias);
-app.post('/competencias/:id/voto', controlador.votar);
-app.get('/competencias/:id/resultados', controlador.resultados);
+app.get('/competencias', controladorCliente.listaCompetencias);
+app.get('/competencias/:id/peliculas' , controladorCliente.obtenerCompetencias);
+app.post('/competencias/:id/voto', controladorCliente.votar);
+app.get('/competencias/:id/resultados', controladorCliente.resultados);
+
+//Pedidos de parte del modulo Administrar
+app.get('/generos', controladorAdministrador.generos);
+app.get('/directores', controladorAdministrador.directores);
+app.get('/actores', controladorAdministrador.actores);
+app.post('/competencias', controladorAdministrador.crearCompetencia)
+
 
 
 
