@@ -20,52 +20,46 @@ con.query(sql, function(error, resultado,fields){
 });
 };
 
-//Genera en aleatoria el listado de Peliculas que se van a mostrar para votar
+//Genera en forma aleatoria el listado de Peliculas que se van a mostrar para votar
 function obtenerCompetencias (req , res) {
 var id = req.params.id;
 var sql = "select * from pelicula join (actor_pelicula,actor,director_pelicula,director,genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
+var sqlCount = "select count(*) as contador from pelicula join (actor_pelicula,actor,director_pelicula,director,genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
 var response = {
     'peliculas': "",
     'competencia': "",
 }
-
-con.query("select * from competencias where id = "+ id, function (error, resultado, fields){
-    errores(error, res);
-    const competencia = resultado[0]
-
-    response.competencia = competencia.nombre;
-    console.log(resultado);
-    
-    if (competencia.genero_id  != 0) {
-        sql = sql + " and genero_id = " + competencia.genero_id;
-        console.log("filtrado de genero" , sql , competencia.genero_id)
-    }
-    if (competencia.actor_id != 0) {
-  //      con.query("select nombre from actor where id = " + filtrado.director_id, function (error, resultado, fields){
-    //        var actor = resultado;
-    //        console.log(resultado);
-            sql = sql + " and actor_id = " + competencia.actor_id;
-            console.log("filtrado de actor", sql)
-      //  })
+con.query(sqlCount, function(error, resultado, fields){
+    console.log(resultado.contador);
+    if (resultado.contador < 2 || resultado.contador === undefined){
+        console.log("Hubo un error en la consulta", resultado.contador);
+        return res.status(422).send("Hay menos de 2 peliculas para mostrar en esta Competencia");
     }
 
-    if (competencia.director_id != 0){
-    //    con.query("select nombre from director where id = " + filtrado.director_id, function (error, resultado, fields){
-    //        var director = resultado;
-            sql = sql + " and director_id = " + competencia.director_id;
-            console.log("filtrado de director", sql)
-    //    })
-    }
-
-    sql = sql + " order by rand()"
-    con.query(sql, function (error, resultado, fields) {
+    con.query("select * from competencias where id = "+ id, function (error, resultado, fields){
         errores(error, res);
-        response.peliculas = resultado;
-        res.send(JSON.stringify(response));
-    });
+        var competencia = resultado[0]
 
+        response.competencia = competencia.nombre;
+        if (competencia.genero_id  != 0) {
+            sql = sql + " and genero_id = " + competencia.genero_id;
+        }
+        if (competencia.actor_id != 0) {
+                sql = sql + " and actor_id = " + competencia.actor_id;
+        }
+        if (competencia.director_id != 0){
+                sql = sql + " and director_id = " + competencia.director_id;
+        }
+        sql = sql + " order by rand()"
+        con.query(sql, function (error, resultado, fields) {
+            errores(error, res);
+            response.peliculas = resultado;
+            res.send(JSON.stringify(response));
+        });
+
+    });
 });
-}
+};
 
 //Toma los datos de las Peliculas mostradas e inserta en la base la votacion seleccionada
 function votar (req, res) {
