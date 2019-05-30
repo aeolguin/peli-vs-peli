@@ -23,22 +23,21 @@ con.query(sql, function(error, resultado,fields){
 //Genera en forma aleatoria el listado de Peliculas que se van a mostrar para votar
 function obtenerCompetencias (req , res) {
 var id = req.params.id;
-var sql = "select * from pelicula join (actor_pelicula,actor,director_pelicula,director,genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
-var sqlCount = "select count(*) as contador from pelicula join (actor_pelicula,actor,director_pelicula,director,genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
+var sql = "select * from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
+var sqlCount = "select count(*) as contador from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
 var response = {
     'peliculas': "",
     'competencia': "",
 }
-con.query(sqlCount, function(error, resultado, fields){
-    console.log(resultado.contador);
-    if (resultado.contador < 2 || resultado.contador === undefined){
-        console.log("Hubo un error en la consulta", resultado.contador);
-        return res.status(422).send("Hay menos de 2 peliculas para mostrar en esta Competencia");
+con.query(sqlCount, function(error, resultado, fields){ 
+    if (resultado[0].contador < 2 || resultado[0].contador === undefined){
+        return res.status(422).send("Hay menos de 2 peliculas para mostrar en esta Competencia");  
     }
 
-    con.query("select * from competencias where id = "+ id, function (error, resultado, fields){
+    con.query("select * from competencias.competencias where id = "+ id, function (error, resultado, fields){
         errores(error, res);
         var competencia = resultado[0]
+        
 
         response.competencia = competencia.nombre;
         if (competencia.genero_id  != 0) {
