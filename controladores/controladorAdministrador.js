@@ -39,19 +39,38 @@ var generoCompentecia = req.body.genero;
 var directorCompetencia = req.body.director;
 var actorCompetencia = req.body.actor;
 var accionCompentncia = req.body.Guardar;
-adm.query("select * from competencias where nombre = " + "'%" + nombreCompetencia + "%'" ,
+var sqlCount = "select count(*) as contador from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
+adm.query("select * from competencias where nombre = " + nombreCompetencia,
     function (error, resultado, fields){
         if (resultado){
             console.log("Hubo un error en la consulta", resultado);
             return res.status(422).send("Error! Ya existe una competencia con ese nombre");
         }
+
+        if (generoCompentecia  != 0) {
+            sqlCount = sqlCount + " and genero_id = " + generoCompentecia;
+        }
+        if (actorCompetencia != 0) {
+            sqlCount = sqlCount + " and actor_id = " + actorCompetencia;
+        }
+        if (directorCompetencia != 0){
+            sqlCount = sqlCount + " and director_id = " + directorCompetencia;
+        }
+
+//Se chequea que la competencia a crear tenga al menos 2 peliculas para mostrar
+        adm.query(sqlCount, function(error, resultado, fields){ 
+            if (resultado[0].contador < 2 || resultado[0].contador === undefined){
+                return res.status(422).send("Hay menos de 2 peliculas para mostrar en esta Competencia - Genere una nueva competencia con otros filtros");  
+            }
   
-        adm.query("insert into competencias (nombre, genero_id, actor_id, director_id) values (?, ?, ?, ?)",
-        [nombreCompetencia , generoCompentecia, actorCompetencia, directorCompetencia], function (error, resultado, fields){
-            errores(error, res);
-             res.send(JSON.stringify(resultado));
+//Si no existe competencia y tiene peliculas para mostrar se crea la competencia            
+            adm.query("insert into competencias (nombre, genero_id, actor_id, director_id) values (?, ?, ?, ?)",
+            [nombreCompetencia , generoCompentecia, actorCompetencia, directorCompetencia], function (error, resultado, fields){
+                errores(error, res);
+                res.send(JSON.stringify(resultado));
+            })
         })
-    })
+    })    
 };
 
 

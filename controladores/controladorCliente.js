@@ -23,41 +23,36 @@ con.query(sql, function(error, resultado,fields){
 //Genera en forma aleatoria el listado de Peliculas que se van a mostrar para votar
 function obtenerCompetencias (req , res) {
 var id = req.params.id;
-var sql = "select * from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
-var sqlCount = "select count(*) as contador from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
+var sql = "select pelicula.id,pelicula.titulo,pelicula.genero_id,pelicula.poster from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
 var response = {
     'peliculas': "",
     'competencia': "",
 }
-con.query(sqlCount, function(error, resultado, fields){ 
-    if (resultado[0].contador < 2 || resultado[0].contador === undefined){
-        return res.status(422).send("Hay menos de 2 peliculas para mostrar en esta Competencia");  
+
+con.query("select * from competencias.competencias where id = "+ id, function (error, resultado, fields){
+    errores(error, res);
+    var competencia = resultado[0]
+
+    response.competencia = competencia.nombre;
+    if (competencia.genero_id  != 0) {
+        sql = sql + " and genero_id = " + competencia.genero_id;
     }
 
-    con.query("select * from competencias.competencias where id = "+ id, function (error, resultado, fields){
-        errores(error, res);
-        var competencia = resultado[0]
-        
+    if (competencia.actor_id != 0) {
+        sql = sql + " and actor_id = " + competencia.actor_id;
+    }
 
-        response.competencia = competencia.nombre;
-        if (competencia.genero_id  != 0) {
-            sql = sql + " and genero_id = " + competencia.genero_id;
-        }
-        if (competencia.actor_id != 0) {
-                sql = sql + " and actor_id = " + competencia.actor_id;
-        }
-        if (competencia.director_id != 0){
-                sql = sql + " and director_id = " + competencia.director_id;
-        }
-        sql = sql + " order by rand()"
+    if (competencia.director_id != 0){
+        sql = sql + " and director_id = " + competencia.director_id;
+    }
+
+    sql = sql + " order by rand()"
         con.query(sql, function (error, resultado, fields) {
             errores(error, res);
             response.peliculas = resultado;
             res.send(JSON.stringify(response));
         });
-
     });
-});
 };
 
 //Toma los datos de las Peliculas mostradas e inserta en la base la votacion seleccionada
@@ -77,9 +72,10 @@ con.query("insert into peli_votada (competencia, voto) values (?, ?)",
 function resultados (req, res) {
 var competencia = req.params.id;
 
-con.query("SELECT voto,competencia,poster,titulo,pelicula.id, count(*) as votos FROM peli_votada join pelicula on voto = pelicula.id GROUP BY voto,competencia HAVING count(*) > 0 and competencia = ? order by votos desc limit 3", [competencia],
+con.query("SELECT voto,competencia,poster,titulo,pelicula.id, count(*) as votos FROM competencias.peli_votada join competencias.pelicula on voto = pelicula.id GROUP BY voto,competencia HAVING count(*) > 0 and competencia = ? order by votos desc limit 3", [competencia],
     function (error, resultado, fields){
         errores(error , res);
+        console.log(resultado)
         var response = {
             'resultados': resultado,
         }
