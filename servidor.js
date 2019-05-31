@@ -24,7 +24,9 @@ app.get('/competencias/:id/resultados', controladorCliente.resultados);
 app.get('/generos', controladorAdministrador.generos);
 app.get('/directores', controladorAdministrador.directores);
 app.get('/actores', controladorAdministrador.actores);
-app.post('/competencias', controladorAdministrador.crearCompetencia)
+app.post('/competencias', controladorAdministrador.crearCompetencia);
+app.get('/competencias/:id', controladorAdministrador.competenciaABorrar);
+app.delete('/competencias/:id', controladorAdministrador.eliminaCompetencia);
 
 
 

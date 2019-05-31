@@ -38,7 +38,6 @@ var nombreCompetencia = req.body.nombre;
 var generoCompentecia = req.body.genero;
 var directorCompetencia = req.body.director;
 var actorCompetencia = req.body.actor;
-var accionCompentncia = req.body.Guardar;
 var sqlCount = "select count(*) as contador from competencias.pelicula join (competencias.actor_pelicula,competencias.actor,competencias.director_pelicula,competencias.director,competencias.genero) on (actor_pelicula.pelicula_id = pelicula.id and actor_id = actor.id and director_pelicula.pelicula_id = pelicula.id and director_id = director.id and genero.id = pelicula.genero_id) where 1 = 1" 
 adm.query("select * from competencias where nombre = " + nombreCompetencia,
     function (error, resultado, fields){
@@ -73,6 +72,60 @@ adm.query("select * from competencias where nombre = " + nombreCompetencia,
     })    
 };
 
+//Se obtiene la competencia a ser borrada
+function competenciaABorrar (req, res) {
+    var id = req.params.id;
+    var response = {
+        'nombre' : "",
+        'actor_nombre' : "no definido",
+        'director_nombre' : "no definido",
+        'genero_nombre' : "no definido"
+    }
+    adm.query("select * from competencias.competencias where id = " + id, function (error, resultado, fields) {
+        errores(error, res);
+        response.nombre = resultado[0].nombre;
+        if (resultado[0].director_id != 0) {
+            adm.query("select nombre from competencias.director where id = " + resultado[0].director_id, function (error, resultado1, fields){
+                errores( error, res);
+                response.director = resultado1;
+            })
+        }
+        if (resultado[0].actor_id != 0){
+            adm.query("select nombre from competencias.actor where id = " + resultado[0].actor_id, function (error, resultado2, fields){
+                errores( error, res);
+                response.actor = resultado2;
+            })
+        }
+        if (resultado[0].genero_id != 0) {
+            adm.query("select nombre from competencias.genero where id = " + resultado[0].genero_id, function (error, resultado3, fields){
+                errores( error, res);
+                response.genero = resultado3;
+            })
+        }
+        res.send(JSON.stringify(response));
+    })
+};
+
+//Se elimina la competencia seleccionada en el Front junto a los votos correspondientes a dicha competencia
+function eliminaCompetencia (req, res){
+    var confirmacion = req.body.Eliminar;
+    var id = req.params.id;
+    console.log(confirmacion , id);
+    if(confirmacion === "Eliminar") {
+        console.log("entro")
+        adm.query("DELETE FROM competencias.competencias where id = " + id, function (error, resultado, fields){
+            errores(error, res);
+            console.log("se borro" , resultado);
+            return res.send(JSON.stringify(resultado)); 
+        })
+    }else {
+    console.log("Hubo un error al intentar borrar la competencia");
+    return res.status(404).send("No se pudo eliminar la compentencia");
+    }
+};
+
+
+
 
 //Se exportan los modulos para su utilizacion
 module.exports = {
@@ -80,4 +133,6 @@ module.exports = {
     directores : directores,
     actores : actores,
     crearCompetencia : crearCompetencia,
+    competenciaABorrar : competenciaABorrar,
+    eliminaCompetencia : eliminaCompetencia,
 };
