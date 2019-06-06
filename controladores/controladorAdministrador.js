@@ -124,8 +124,32 @@ function eliminaCompetencia (req, res){
     }
 };
 
+//Funcion que edita el titulo de una competencia
+function editarCompetencia (req, res) {
+    var idCompetencia = req.params.id;
+    var tituloEditado = req.body.nombre;
+    //Se chequea que no exista una competencia con el mismo npmbre
+    adm.query("select * from competencias where nombre = " + tituloEditado,
+    function (error, resultado, fields){
+        if (resultado){
+            console.log("Hubo un error en la consulta", resultado);
+            return res.status(422).send("Error! Ya existe una competencia con ese nombre");
+        };
+        adm.query("UPDATE competencias.competencias SET nombre= ? WHERE id = ?", [tituloEditado, idCompetencia], function (error, resultado, fields){
+            errores(error, res);
+            res.send(JSON.stringify(resultado));
+        });
+    });
+};
 
-
+//Funcion de Borra todos los votos realizados a una competencia, se realiza un borrado físico de los datos
+function reiniciarCompetencia (req, res) {
+    var idReinicio = req.params.id;
+    adm.query("DELETE FROM competencias.peli_votada WHERE competencia = ?", [idReinicio], function (error, resultado, fields){
+        errores(error, res);
+        res.send(JSON.stringify(resultado));
+    });
+}
 
 //Se exportan los modulos para su utilizacion
 module.exports = {
@@ -135,4 +159,6 @@ module.exports = {
     crearCompetencia : crearCompetencia,
     competenciaABorrar : competenciaABorrar,
     eliminaCompetencia : eliminaCompetencia,
+    editarCompetencia : editarCompetencia,
+    reiniciarCompetencia : reiniciarCompetencia
 };

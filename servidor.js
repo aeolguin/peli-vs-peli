@@ -27,6 +27,8 @@ app.get('/actores', controladorAdministrador.actores);
 app.post('/competencias', controladorAdministrador.crearCompetencia);
 app.get('/competencias/:id', controladorAdministrador.competenciaABorrar);
 app.delete('/competencias/:id', controladorAdministrador.eliminaCompetencia);
+app.put('/competencias/:id', controladorAdministrador.editarCompetencia);
+app.delete('/competencias/:id/votos', controladorAdministrador.reiniciarCompetencia);
 
 
 
